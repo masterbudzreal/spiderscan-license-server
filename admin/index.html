@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpiderScan Master — License Admin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070d;--bg-card:#111125;--bg-card-hover:#181840;
+  --border:rgba(255,255,255,0.06);--border-accent:rgba(57,255,20,0.2);
+  --text:#eeeef5;--text-sec:#8888a0;--text-muted:#55556a;
+  --green:#39FF14;--green-dim:#2ecc10;--green-glow:rgba(57,255,20,0.12);
+  --violet:#BF40FF;--violet-dim:#9930cc;--violet-glow:rgba(191,64,255,0.12);
+  --grad:linear-gradient(135deg,#39FF14,#BF40FF);
+  --danger:#ff3b3b;--warning:#ffaa00;--success:#39FF14;
+  --radius:12px;--radius-sm:8px;
+}
+html,body{min-height:100vh}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+h1,h2,h3{font-family:'Space Grotesk','Inter',sans-serif;font-weight:700}
+
+.container{max-width:1200px;margin:0 auto;padding:32px 24px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px}
+.header-left{display:flex;align-items:center;gap:16px}
+.header-left h1{font-size:24px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-left span{font-size:12px;color:var(--text-muted);display:block;margin-top:2px}
+.header-actions{display:flex;gap:12px;flex-wrap:wrap}
+
+/* Buttons */
+.btn{
+  padding:10px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text);
+  transition:all .2s;display:inline-flex;align-items:center;gap:8px;font-family:inherit;
+}
+.btn:hover{border-color:var(--border-accent);background:var(--bg-card-hover)}
+.btn-primary{background:var(--green);color:#000;border-color:var(--green)}
+.btn-primary:hover{background:var(--green-dim);border-color:var(--green-dim)}
+.btn-danger{border-color:rgba(255,59,59,.3);color:var(--danger)}
+.btn-danger:hover{background:rgba(255,59,59,.1)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px 24px;transition:all .25s;
+}
+.stat-card:hover{border-color:var(--border-accent);background:var(--bg-card-hover)}
+.stat-card .label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.stat-card .value{font-size:32px;font-weight:800;font-family:'Space Grotesk',sans-serif}
+.stat-card .value.grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{
+  background:var(--bg-card);border:1px solid var(--border);color:var(--text);
+  padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;
+  outline:none;transition:border-color .2s;
+}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--green)}
+.filter-bar input{flex:1;min-width:200px}
+.filter-bar select{min-width:140px}
+
+/* Table */
+.table-wrap{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  overflow-x:auto;
+}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{
+  text-align:left;padding:14px 16px;font-size:11px;text-transform:uppercase;letter-spacing:1px;
+  color:var(--text-muted);border-bottom:1px solid var(--border);font-weight:600;white-space:nowrap;
+}
+tbody td{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody tr:last-child td{border-bottom:none}
+.key-cell{font-family:'Space Grotesk',monospace;font-size:13px;font-weight:500;color:var(--green);cursor:pointer}
+.key-cell:hover{text-decoration:underline}
+.badge{
+  display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.badge-active{background:rgba(57,255,20,.12);color:var(--green)}
+.badge-revoked{background:rgba(255,59,59,.12);color:var(--danger)}
+.badge-expired{background:rgba(255,170,0,.12);color:var(--warning)}
+.badge-premium{background:var(--violet-glow);color:var(--violet)}
+.badge-free{background:rgba(255,255,255,.06);color:var(--text-sec)}
+.actions-cell{display:flex;gap:6px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.empty-state .icon{font-size:48px;margin-bottom:16px}
+.empty-state p{font-size:14px}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+}
+.modal-overlay.active{display:flex}
+.modal{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:16px;
+  padding:32px;max-width:500px;width:100%;animation:modalIn .3s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
+.modal h2{font-size:20px;margin-bottom:24px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:12px;color:var(--text-sec);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:10px 14px;border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green)}
+.form-group textarea{resize:vertical;min-height:60px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.modal-footer{display:flex;justify-content:flex-end;gap:12px;margin-top:24px}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--bg-card);border:1px solid var(--border-accent);
+  border-radius:var(--radius);padding:14px 20px;color:var(--green);font-size:13px;font-weight:600;
+  transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-left">
+      <div>
+        <h1>SpiderScan Master</h1>
+        <span>License Management Panel</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" onclick="loadLicenses()">&#x21bb; Refresh</button>
+      <button class="btn btn-primary" onclick="openCreateModal()">+ Create License</button>
+    </div>
+  </div>
+
+  <div class="stats" id="statsRow">
+    <div class="stat-card"><div class="label">Total Licenses</div><div class="value grad" id="statTotal">-</div></div>
+    <div class="stat-card"><div class="label">Active</div><div class="value" id="statActive" style="color:var(--green)">-</div></div>
+    <div class="stat-card"><div class="label">Premium</div><div class="value" id="statPremium" style="color:var(--violet)">-</div></div>
+    <div class="stat-card"><div class="label">Free Tier</div><div class="value" id="statFree" style="color:var(--text-sec)">-</div></div>
+    <div class="stat-card"><div class="label">Revoked</div><div class="value" id="statRevoked" style="color:var(--danger)">-</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="Search by key, email or name..." oninput="loadLicenses()">
+    <select id="filterStatus" onchange="loadLicenses()">
+      <option value="">All statuses</option>
+      <option value="active">Active</option>
+      <option value="revoked">Revoked</option>
+      <option value="expired">Expired</option>
+    </select>
+    <select id="filterTier" onchange="loadLicenses()">
+      <option value="">All tiers</option>
+      <option value="premium">Premium</option>
+      <option value="free">Free</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>License Key</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Owner</th>
+          <th>Machine</th>
+          <th>Created</th>
+          <th>Expires</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="licenseTable">
+        <tr><td colspan="8" class="empty-state"><div class="icon">&#x1f5dd;</div><p>No licenses found</p></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal">
+    <h2>Create License Keys</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" id="createCount" value="1" min="1" max="100">
+      </div>
+      <div class="form-group">
+        <label>Tier</label>
+        <select id="createTier">
+          <option value="premium">Premium</option>
+          <option value="free">Free</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Owner Name</label>
+        <input type="text" id="createName" placeholder="Optional">
+      </div>
+      <div class="form-group">
+        <label>Owner Email</label>
+        <input type="email" id="createEmail" placeholder="Optional">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Expiration Date</label>
+      <input type="date" id="createExpires">
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="createNotes" placeholder="Optional notes..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createLicenses()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Keys Result Modal -->
+<div class="modal-overlay" id="keysModal">
+  <div class="modal">
+    <h2>Keys Created</h2>
+    <div id="keysResult" style="max-height:300px;overflow-y:auto;background:var(--bg);border-radius:var(--radius-sm);padding:16px;font-family:'Space Grotesk',monospace;font-size:14px;line-height:2;color:var(--green)"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="copyKeys()">Copy All</button>
+      <button class="btn btn-primary" onclick="closeKeysModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = window.location.origin + '/api';
+let lastCreatedKeys = [];
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch(API + '/stats');
+    const d = await r.json();
+    document.getElementById('statTotal').textContent = d.total;
+    document.getElementById('statActive').textContent = d.active;
+    document.getElementById('statPremium').textContent = d.premium;
+    document.getElementById('statFree').textContent = d.free;
+    document.getElementById('statRevoked').textContent = d.revoked;
+  } catch(e) {}
+}
+
+async function loadLicenses() {
+  const search = document.getElementById('searchInput').value;
+  const status = document.getElementById('filterStatus').value;
+  const tier = document.getElementById('filterTier').value;
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+  if (tier) params.set('tier', tier);
+
+  try {
+    const r = await fetch(API + '/licenses?' + params);
+    const d = await r.json();
+    renderTable(d.licenses);
+    loadStats();
+  } catch(e) {
+    document.getElementById('licenseTable').innerHTML = '<tr><td colspan="8" class="empty-state"><div class="icon">&#x26a0;</div><p>Could not connect to server</p></td></tr>';
+  }
+}
+
+function renderTable(licenses) {
+  const tbody = document.getElementById('licenseTable');
+  if (licenses.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="icon">&#x1f5dd;</div><p>No licenses found</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML = licenses.map(l => `
+    <tr>
+      <td class="key-cell" onclick="copyKey('${l.license_key}')" title="Click to copy">${l.license_key}</td>
+      <td><span class="badge badge-${l.tier}">${l.tier}</span></td>
+      <td><span class="badge badge-${l.status}">${l.status}</span></td>
+      <td>${l.owner_name || l.owner_email || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td style="font-size:11px;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis">${l.machine_id || '—'}</td>
+      <td style="font-size:12px;color:var(--text-sec)">${formatDate(l.created_at)}</td>
+      <td style="font-size:12px;color:var(--text-sec)">${l.expires_at ? formatDate(l.expires_at) : 'Never'}</td>
+      <td>
+        <div class="actions-cell">
+          ${l.status === 'active'
+            ? `<button class="btn btn-sm btn-danger" onclick="revokeLicense('${l.license_key}')">Revoke</button>`
+            : `<button class="btn btn-sm" onclick="activateLicense('${l.license_key}')">Activate</button>`}
+          <button class="btn btn-sm btn-danger" onclick="deleteLicense('${l.license_key}')" style="padding:6px 8px" title="Delete">&#x1f5d1;</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d + 'Z').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function copyKey(key) {
+  navigator.clipboard.writeText(key).then(() => showToast('Key copied: ' + key));
+}
+
+function openCreateModal() { document.getElementById('createModal').classList.add('active'); }
+function closeCreateModal() { document.getElementById('createModal').classList.remove('active'); }
+function closeKeysModal() { document.getElementById('keysModal').classList.remove('active'); }
+
+async function createLicenses() {
+  const body = {
+    count: parseInt(document.getElementById('createCount').value) || 1,
+    tier: document.getElementById('createTier').value,
+    owner_name: document.getElementById('createName').value || undefined,
+    owner_email: document.getElementById('createEmail').value || undefined,
+    expires_at: document.getElementById('createExpires').value || undefined,
+    notes: document.getElementById('createNotes').value || undefined,
+  };
+  try {
+    const r = await fetch(API + '/licenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json();
+    lastCreatedKeys = d.created;
+    closeCreateModal();
+    document.getElementById('keysResult').innerHTML = d.created.map(k => `<div>${k}</div>`).join('');
+    document.getElementById('keysModal').classList.add('active');
+    showToast(d.count + ' license(s) created');
+    loadLicenses();
+  } catch(e) { showToast('Error creating licenses'); }
+}
+
+function copyKeys() {
+  navigator.clipboard.writeText(lastCreatedKeys.join('\n')).then(() => showToast('All keys copied'));
+}
+
+async function revokeLicense(key) {
+  try {
+    await fetch(API + '/licenses/' + key, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'revoked' }) });
+    showToast('License revoked');
+    loadLicenses();
+  } catch(e) { showToast('Error revoking license'); }
+}
+
+async function activateLicense(key) {
+  try {
+    await fetch(API + '/licenses/' + key, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'active' }) });
+    showToast('License activated');
+    loadLicenses();
+  } catch(e) { showToast('Error activating license'); }
+}
+
+async function deleteLicense(key) {
+  if (!confirm('Delete license ' + key + '? This cannot be undone.')) return;
+  try {
+    await fetch(API + '/licenses/' + key, { method: 'DELETE' });
+    showToast('License deleted');
+    loadLicenses();
+  } catch(e) { showToast('Error deleting license'); }
+}
+
+loadLicenses();
+</script>
+</body>
+</html>

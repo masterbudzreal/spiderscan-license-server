@@ -1,0 +1,18 @@
+{
+  "licenses": [
+    {
+      "id": 1,
+      "license_key": "SSM-464E-4CFF-47AD-6E01-86B9",
+      "tier": "premium",
+      "status": "active",
+      "owner_email": "teomastro01@gmail.com",
+      "owner_name": "Samy",
+      "machine_id": null,
+      "created_at": "2026-10-19T18:17:32.598Z",
+      "activated_at": null,
+      "expires_at": null,
+      "last_check": null,
+      "notes": null
+    }
+  ]
+}
